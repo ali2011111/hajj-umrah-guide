@@ -333,10 +333,36 @@ class _PrayerCard extends StatelessWidget {
   // { 'Fajr': '03:18', 'Dhuhr': '13:23', ... }
   final Map<String, dynamic> timings;
 
+  static const List<String> prayerOrder = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+
   const _PrayerCard({required this.timings});
+
+  String getNextPrayer(Map<String, dynamic> timings) {
+  final now = TimeOfDay.now(); // hva er klokken nå?
+
+  for (final prayer in prayerOrder) {
+      final time = timings[prayer]; // f.eks. "17:37"
+      
+      // Gjør om "17:37" til timer og minutter
+      final parts = time.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      // Er denne bønnen ennå ikke passert?
+      if (now.hour < hour || (now.hour == hour && now.minute < minute)) {
+        return prayer; // dette er neste bønn!
+      }
+    }
+
+    // Alle bønner er passert → neste er Fajr i morgen
+    return 'Fajr';
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Finn neste bønn dynamisk basert på klokken
+    final nextPrayer = getNextPrayer(timings);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -351,12 +377,12 @@ class _PrayerCard extends StatelessWidget {
             style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 2),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Fajr',
-            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+          Text(
+            nextPrayer,  // ← dynamisk
+            style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
           ),
           Text(
-            timings['Fajr'],
+            timings[nextPrayer],  // ← dynamisk
             style: const TextStyle(color: kGold, fontSize: 18),
           ),
           const SizedBox(height: 16),
