@@ -148,7 +148,6 @@ class _HomeTabState extends State<_HomeTab> {
     );
 
     if (response.statusCode == 200) {
-
       // jsonDecode() gjør om rå tekst fra internett
       // til et Dart Map-objekt vi kan jobbe med
       final json = jsonDecode(response.body);
@@ -165,7 +164,6 @@ class _HomeTabState extends State<_HomeTab> {
       // Returner hele data-objektet som inneholder
       // både timings og datoinformasjon
       return data;
-
     } else {
       throw Exception('Klarte ikke hente bønnetider fra API');
     }
@@ -177,187 +175,184 @@ class _HomeTabState extends State<_HomeTab> {
   // og på nytt hver gang setState() kjøres.
   @override
   Widget build(BuildContext context) {
+    // CustomScrollView lar hele skjermen scrolle som én enhet
+    return CustomScrollView(
+      slivers: [
 
-    // Column deler skjermen vertikalt i to seksjoner
-    return Column(
-      children: [
-
-        // ══════════════════════════════
-        // 🟢 GRØNN DEL – øverst
-        //
-        // Inneholder: islamsk dato, hilsen og bønnetider.
-        // SafeArea sørger for at innhold ikke havner
-        // bak statuslinjen eller notch øverst på telefonen.
-        // ══════════════════════════════
-        SafeArea(
+        // ══ GRØNN DEL ══
+        // SliverToBoxAdapter gjør en vanlig widget
+        // om til en del av scroll-systemet
+        SliverToBoxAdapter(
           child: Container(
             color: kDarkGreen,
+            child: SafeArea(
+              bottom: false, // bare beskytt toppen
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                // mindre padding = lavere høyde
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    // Islamsk dato
+                    Text(
+                      _hijriDate,
+                      style: const TextStyle(
+                          color: Colors.white54, fontSize: 13),
+                    ),
+
+                    const SizedBox(height: 6), // mindre enn før
+
+                    // Arabisk hilsen
+                    const Text(
+                      'السلام عليكم',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 26, // litt mindre enn før
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Text(
+                      'Peace be upon you, Pilgrim',
+                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Bønnetid-boks
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: _prayerTimesFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(color: kGold),
+                          );
+                        }
+                        if (snapshot.hasError) {
+                          return const Text(
+                            'Kunne ikke laste bønnetider',
+                            style: TextStyle(color: Colors.red),
+                          );
+                        }
+                        final timings = snapshot.data!['timings'];
+                        return _PrayerCard(timings: timings);
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // ══ HVIT DEL ══
+        // SliverToBoxAdapter for Quick Access-seksjonen
+        SliverToBoxAdapter(
+          child: Container(
+            color: const Color(0xFFF5F0EB),
             padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                // Islamsk dato (f.eks. "Şafar 1448 AH")
-                // Vises som tom tekst til API-et svarer
-                Text(
-                  _hijriDate,
-                  style: const TextStyle(color: Colors.white54, fontSize: 13),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Arabisk hilsen
                 const Text(
-                  'السلام عليكم',
+                  'QUICK ACCESS',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+                    color: Colors.black54,
+                    fontSize: 12,
+                    letterSpacing: 2,
                   ),
                 ),
-                const Text(
-                  'Peace be upon you, Pilgrim',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                const SizedBox(height: 12),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  // ClampingScrollPhysics gjør at GridView
+                  // ikke prøver å scrolle selv
+                  physics: const ClampingScrollPhysics(),
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  children: [
+                    _QuickCard(
+                      title: 'Umrah Guide',
+                      arabic: 'دليل العمرة',
+                      icon: Icons.menu_book,
+                      color: const Color(0xFFE8F5E9),
+                      iconColor: kDarkGreen,
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const UmrahScreen())),
+                    ),
+                    _QuickCard(
+                      title: 'Hajj Guide',
+                      arabic: 'دليل الحج',
+                      icon: Icons.star_border,
+                      color: const Color(0xFFFFF8E1),
+                      iconColor: const Color(0xFF8B6914),
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const HajjScreen())),
+                    ),
+                    _QuickCard(
+                      title: 'Holy Sites',
+                      arabic: 'خريطة المشاعر',
+                      icon: Icons.map_outlined,
+                      color: const Color(0xFFE3F2FD),
+                      iconColor: const Color(0xFF1565C0),
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const MapScreen())),
+                    ),
+                    _QuickCard(
+                      title: 'Duas & Dhikr',
+                      arabic: 'الأدعية والأذكار',
+                      icon: Icons.favorite_border,
+                      color: const Color(0xFFFCE4EC),
+                      iconColor: const Color(0xFFC62828),
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const DuasScreen())),
+                    ),
+                    _QuickCard(
+                      title: 'Checklist',
+                      arabic: 'قائمة التحقق',
+                      icon: Icons.check_box_outlined,
+                      color: const Color(0xFFEDE7F6),
+                      iconColor: const Color(0xFF6A1B9A),
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const ChecklistScreen())),
+                    ),
+                    _QuickCard(
+                      title: 'Emergency',
+                      arabic: 'الطوارئ',
+                      icon: Icons.shield_outlined,
+                      color: const Color(0xFFFBE9E7),
+                      iconColor: const Color(0xFFBF360C),
+                      onTap: () =>
+                          Navigator.push(context,
+                              MaterialPageRoute(
+                                  builder: (_) => const EmergencyScreen())),
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 20),
-
-                // FutureBuilder håndterer tre tilstander:
-                //   ⏳ Laster  → vis gull-spinner
-                //   ❌ Feil    → vis feilmelding i rødt
-                //   ✅ Ferdig  → vis bønnetid-boksen
-                FutureBuilder<Map<String, dynamic>>(
-                  future: _prayerTimesFuture,
-                  builder: (context, snapshot) {
-
-                    // Tilstand 1: venter på svar fra internett
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(color: kGold),
-                      );
-                    }
-
-                    // Tilstand 2: noe gikk galt med API-kallet
-                    if (snapshot.hasError) {
-                      return const Text(
-                        'Kunne ikke laste bønnetider',
-                        style: TextStyle(color: Colors.red),
-                      );
-                    }
-
-                    // Tilstand 3: data er klar!
-                    // Hent timings-objektet og send det til _PrayerCard
-                    final timings = snapshot.data!['timings'];
-                    return _PrayerCard(timings: timings);
-                  },
-                ),
-
-                const SizedBox(height: 20),
               ],
             ),
           ),
         ),
 
-
-        // ══════════════════════════════
-        // ⬜ HVIT DEL – nederst
-        //
-        // Inneholder: snarveier til alle seksjoner i appen.
-        // Expanded gjør at denne delen fyller all
-        // gjenværende plass under den grønne delen.
-        // ══════════════════════════════
-        Expanded(
-          child: Container(
-            color: const Color(0xFFF5F0EB), // varm hvit/beige
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-
-                  // Seksjonstittel
-                  const Text(
-                    'QUICK ACCESS',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 12,
-                      letterSpacing: 2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // GridView viser kortene i et 2x3 rutenett.
-                  // shrinkWrap: true = ta bare den plassen som trengs
-                  // NeverScrollableScrollPhysics = la SingleChildScrollView
-                  // håndtere scrollingen, ikke GridView
-                  GridView.count(
-                    crossAxisCount: 2,         // 2 kort per rad
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,      // mellomrom mellom kolonner
-                    mainAxisSpacing: 12,       // mellomrom mellom rader
-                    children: [
-                      _QuickCard(
-                        title: 'Umrah Guide',
-                        arabic: 'دليل العمرة',
-                        icon: Icons.menu_book,
-                        color: const Color(0xFFE8F5E9),  // lys grønn
-                        iconColor: kDarkGreen,
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const UmrahScreen())),
-                      ),
-                      _QuickCard(
-                        title: 'Hajj Guide',
-                        arabic: 'دليل الحج',
-                        icon: Icons.star_border,
-                        color: const Color(0xFFFFF8E1),  // lys gull
-                        iconColor: const Color(0xFF8B6914),
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const HajjScreen())),
-                      ),
-                      _QuickCard(
-                        title: 'Holy Sites',
-                        arabic: 'خريطة المشاعر',
-                        icon: Icons.map_outlined,
-                        color: const Color(0xFFE3F2FD),  // lys blå
-                        iconColor: const Color(0xFF1565C0),
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const MapScreen())),
-                      ),
-                      _QuickCard(
-                        title: 'Duas & Dhikr',
-                        arabic: 'الأدعية والأذكار',
-                        icon: Icons.favorite_border,
-                        color: const Color(0xFFFCE4EC),  // lys rosa
-                        iconColor: const Color(0xFFC62828),
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const DuasScreen())),
-                      ),
-                      _QuickCard(
-                        title: 'Checklist',
-                        arabic: 'قائمة التحقق',
-                        icon: Icons.check_box_outlined,
-                        color: const Color(0xFFEDE7F6),  // lys lilla
-                        iconColor: const Color(0xFF6A1B9A),
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const ChecklistScreen())),
-                      ),
-                      _QuickCard(
-                        title: 'Emergency',
-                        arabic: 'الطوارئ',
-                        icon: Icons.shield_outlined,
-                        color: const Color(0xFFFBE9E7),  // lys oransje
-                        iconColor: const Color(0xFFBF360C),
-                        onTap: () => Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => const EmergencyScreen())),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+        // Fyller resten av skjermen med hvit farge
+        // slik at det ikke er grønt bak kortene
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Container(color: const Color(0xFFF5F0EB)),
         ),
       ],
     );
@@ -417,6 +412,42 @@ class _PrayerCard extends StatelessWidget {
     return 'Fajr';
   }
 
+  // getTimeUntilNextPrayer() beregner hvor lenge det er til neste bønn.
+  //
+  // Logikk:
+  //   1. Hent nåværende tid
+  //   2. Hent tidspunkt for neste bønn
+  //   3. Regn ut differansen i minutter
+  //   4. Gjør om til "1h 23m" format
+  String getTimeUntilNextPrayer(String nextPrayer) {
+    final now = DateTime.now();
+
+    // Hent time og minutt for neste bønn
+    final parts  = timings[nextPrayer].split(':');
+    final hour   = int.parse(parts[0]);
+    final minute = int.parse(parts[1]);
+
+    // Lag et DateTime-objekt for neste bønn i dag
+    var prayerTime = DateTime(now.year, now.month, now.day, hour, minute);
+
+    // Hvis bønnen er Fajr og den er passert → den er i morgen
+    if (prayerTime.isBefore(now)) {
+      prayerTime = prayerTime.add(const Duration(days: 1));
+    }
+
+    // Regn ut differansen
+    final diff = prayerTime.difference(now);
+    final hours   = diff.inHours;
+    final minutes = diff.inMinutes % 60; // resten etter hele timer
+
+    // Returner lesbart format
+    if (hours > 0) {
+      return 'in ${hours}h ${minutes}m';
+    } else {
+      return 'in ${minutes}m';
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -435,7 +466,6 @@ class _PrayerCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           // Etikett øverst
           const Text(
             'NEXT PRAYER',
@@ -458,23 +488,24 @@ class _PrayerCard extends StatelessWidget {
             ),
           ),
 
-          // Tidspunkt for neste bønn i gull
+          // Tidspunkt + nedtelling på samme linje
           Text(
-            timings[nextPrayer],
-            style: const TextStyle(color: kGold, fontSize: 18),
+            '${timings[nextPrayer]}  ·  ${getTimeUntilNextPrayer(nextPrayer)}',
+            style: const TextStyle(color: kGold, fontSize: 16),
           ),
 
           const SizedBox(height: 16),
 
-          // Alle fem bønner på én rad nederst i boksen
+          // Alle fem bønner på én rad
+          // isActive sjekker om denne bønnen er den neste
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _PrayerChip(name: 'Fajr',    time: timings['Fajr']),
-              _PrayerChip(name: 'Dhuhr',   time: timings['Dhuhr']),
-              _PrayerChip(name: 'Asr',     time: timings['Asr']),
-              _PrayerChip(name: 'Maghrib', time: timings['Maghrib']),
-              _PrayerChip(name: 'Isha',    time: timings['Isha']),
+              _PrayerChip(name: 'Fajr',    time: timings['Fajr'],    isActive: nextPrayer == 'Fajr'),
+              _PrayerChip(name: 'Dhuhr',   time: timings['Dhuhr'],   isActive: nextPrayer == 'Dhuhr'),
+              _PrayerChip(name: 'Asr',     time: timings['Asr'],     isActive: nextPrayer == 'Asr'),
+              _PrayerChip(name: 'Maghrib', time: timings['Maghrib'], isActive: nextPrayer == 'Maghrib'),
+              _PrayerChip(name: 'Isha',    time: timings['Isha'],    isActive: nextPrayer == 'Isha'),
             ],
           ),
         ],
@@ -497,29 +528,49 @@ class _PrayerCard extends StatelessWidget {
 class _PrayerChip extends StatelessWidget {
   final String name; // f.eks. "Asr"
   final String time; // f.eks. "17:37"
+  final bool isActive;     // er dette neste bønn?
 
-  const _PrayerChip({required this.name, required this.time});
+  const _PrayerChip({
+    required this.name,
+    required this.time,
+    required this.isActive, // ← ny parameter
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Bønnens navn i grå
-        Text(
-          name,
-          style: const TextStyle(color: Colors.white54, fontSize: 11),
-        ),
-        const SizedBox(height: 4),
-        // Tidspunkt i hvit
-        Text(
-          time,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
-        ),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        // Gull-bakgrunn hvis aktiv, transparent hvis ikke
+        color: isActive ? kGold : Colors.white.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          // Navn – mørk tekst hvis aktiv, grå hvis ikke
+          Text(
+            name,
+            style: TextStyle(
+              color: isActive ? kDarkGreen : Colors.white54,
+              fontSize: 11,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          const SizedBox(height: 4),
+          // Tid – mørk tekst hvis aktiv, hvit hvis ikke
+          Text(
+            time,
+            style: TextStyle(
+              color: isActive ? kDarkGreen : Colors.white,
+              fontSize: 12,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
-
 
 // ═════════════════════════════════════════════════
 // _QUICKCARD
