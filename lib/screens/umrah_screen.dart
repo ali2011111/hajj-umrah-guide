@@ -6,17 +6,8 @@ class UmrahScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Umrah Guide"),
-      ),
-      body: const Center(
-        child: Text(
-          "Step-by-step Umrah Guide",
-          style: TextStyle(
-            fontSize: 24,
-          ),
-        ),
-      ),
+      appBar: AppBar(title: const Text('Umrah Guide')),
+      body: const Center(child: Text('Kommer snart...')),
     );
   }
 }
