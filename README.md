@@ -64,4 +64,4 @@ This is an open project built for the Muslim community. Contributions, feedback 
 
 ## 👨‍💻 Developer
 
-Built by Ali Shakil — software engineer and Muslim, trying to give back to the community one commit at a time.
+Built by Mohammad Ali Shakil — software engineer and Muslim, trying to give back to the community one commit at a time.
