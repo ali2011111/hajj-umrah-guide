@@ -23,6 +23,7 @@ Daleel is built for the community, by the community. The goal is to make the spi
 - [Flutter](https://flutter.dev/) – Cross-platform mobile framework
 - [Dart](https://dart.dev/) – Programming language
 - [AlAdhan API](https://aladhan.com/prayer-times-api) – Free prayer times API
+- [UmmahAPI](https://ummahapi.com/) – Hadith data and daily hadith content
 
 ## 🚀 Getting Started
 
