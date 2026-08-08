@@ -9,14 +9,17 @@ During my own Umrah journey, I noticed that most available apps were either outd
 Daleel is built for the community, by the community. The goal is to make the spiritual journey of Hajj and Umrah more accessible, organized and peaceful for every pilgrim — regardless of experience.
 
 ## ✨ Features
-
-- 📿 Step-by-step Umrah and Hajj guide
-- 🕐 Daily prayer times via AlAdhan API
-- 📅 Hijri (Islamic) calendar date
+- 📿 Step-by-step Umrah guide
+- ⭐ Step-by-step Hajj guide
+- 🕐 Live prayer times (AlAdhan API)
+- 📅 Hijri (Islamic) calendar
+- 📖 Daily Hadith (UmmahAPI)
+- ⏳ Next prayer countdown
 - 🗺️ Holy sites map
 - 🤲 Duas & Dhikr collection
 - ✅ Packing checklist
 - 🆘 Emergency information
+- 📱 Modern Material Design interface
 
 ## 🛠️ Built With
 
@@ -45,6 +48,15 @@ flutter run
 - [ ] Duas & Dhikr section
 - [ ] Checklist with local storage
 - [ ] Multilingual support (Arabic, Norwegian, English)
+
+## 💭 Future Improvements
+
+- Offline prayer times
+- Push notifications
+- Dark mode
+- User preferences
+- Saved favorite duas
+- Multi-language support
 
 ## 🤝 Contributing
 
