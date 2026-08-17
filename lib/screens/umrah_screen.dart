@@ -80,7 +80,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
                           onPressed: () {
                             Navigator.pop(context);
                           },
-
                           icon: const Icon(
                             Icons.arrow_back,
                             color: Colors.white,
@@ -89,29 +88,37 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                         const SizedBox(width: 8),
 
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-
-                          children: [
-                            Text(
-                              'Umrah Guide',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Umrah Guide',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-
-                            SizedBox(height: 2),
-
-                            Text(
-                              'Step-by-step pilgrimage ritual',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
+                              Text(
+                                'Step-by-step pilgrimage ritual',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+
+                        IconButton(
+                          onPressed: () {
+                            // Settings kommer her senere
+                          },
+                          icon: const Icon(
+                            Icons.settings_outlined,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),
