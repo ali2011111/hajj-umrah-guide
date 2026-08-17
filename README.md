@@ -42,7 +42,7 @@ flutter run
 - [x] Home screen with prayer times
 - [x] Hijri calendar date
 - [x] Bottom navigation
-- [ ] Umrah guide with full ritual steps
+- [x] Umrah guide with full ritual steps
 - [ ] Hajj guide
 - [ ] Holy sites map
 - [ ] Duas & Dhikr section
