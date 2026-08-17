@@ -6,6 +6,9 @@ const Color kDarkGreen = Color(0xFF062E22);
 const Color kGold = Color(0xFFE9C46A);
 const Color kBackground = Color(0xFFF8F6F1);
 
+const Color kDarkBackground = Color(0xFF101815);
+const Color kDarkCard = Color(0xFF18231F);
+
 
 // ═════════════════════════════════════════════════
 // UMRAH SCREEN
@@ -13,6 +16,7 @@ const Color kBackground = Color(0xFFF8F6F1);
 // StatefulWidget brukes fordi:
 // - progresjonen skal kunne endres
 // - vi må huske hvilket ritualkort som er åpnet
+// - theme og tekststørrelse kan endres
 // ═════════════════════════════════════════════════
 class UmrahScreen extends StatefulWidget {
   const UmrahScreen({super.key});
@@ -25,27 +29,398 @@ class UmrahScreen extends StatefulWidget {
 class _UmrahScreenState extends State<UmrahScreen> {
 
   // Antall fullførte hovedsteg.
-  // Vi bruker denne senere når vi implementerer
-  // faktisk fullføring av ritualene.
   int _completedSteps = 0;
+
+  // Styrer om guiden bruker dark mode.
+  bool _isDarkMode = false;
+
+  // 1.0 = 100 %
+  // 0.8 = 80 %
+  // 1.4 = 140 %
+  double _textScale = 1.0;
 
   // Holder styr på hvilket kort som er åpnet.
   //
-  // null = ingen kort åpnet
+  // null = ingen
   // 0 = Ihram
   // 1 = Tawaf
   // 2 = Sa'i
   // 3 = Hair Cutting
   int? _expandedStep;
 
+
+  // ═══════════════════════════════════════════════
+  // SETTINGS
+  // ═══════════════════════════════════════════════
+  void _openSettings() {
+    showModalBottomSheet(
+      context: context,
+
+      // Gjør at bottom sheet kan bruke mer av skjermen
+      // dersom innholdet trenger det.
+      isScrollControlled: true,
+
+      // Vi gjør selve modalbakgrunnen transparent.
+      // Da kan Container-en inni styre light/dark dynamisk.
+      backgroundColor: Colors.transparent,
+
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final Color sheetColor =
+            _isDarkMode ? kDarkCard : Colors.white;
+
+            final Color primaryTextColor =
+            _isDarkMode ? Colors.white : Colors.black87;
+
+            final Color secondaryTextColor =
+            _isDarkMode ? Colors.white60 : Colors.black54;
+
+            return SafeArea(
+              top: false,
+
+              child: Container(
+                // Hindrer at panelet blir høyere enn skjermen.
+                constraints: BoxConstraints(
+                  maxHeight:
+                  MediaQuery.of(context).size.height * 0.80,
+                ),
+
+                decoration: BoxDecoration(
+                  color: sheetColor,
+
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
+                ),
+
+                // Hvis skjermen er liten eller teksten blir stor,
+                // kan settings-panelet scrolles i stedet for å overflowe.
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    24,
+                    14,
+                    24,
+                    30,
+                  ),
+
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                    children: [
+
+                      // ─────────────────────────────
+                      // HÅNDTAK
+                      // ─────────────────────────────
+                      Center(
+                        child: Container(
+                          width: 42,
+                          height: 4,
+
+                          decoration: BoxDecoration(
+                            color: _isDarkMode
+                                ? Colors.white24
+                                : Colors.black12,
+
+                            borderRadius:
+                            BorderRadius.circular(20),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+
+                      // ─────────────────────────────
+                      // TITTEL
+                      // ─────────────────────────────
+                      Text(
+                        'Guide settings',
+
+                        style: TextStyle(
+                          color: primaryTextColor,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+
+                      // ─────────────────────────────
+                      // APPEARANCE
+                      // ─────────────────────────────
+                      Text(
+                        'Appearance',
+
+                        style: TextStyle(
+                          color: primaryTextColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+
+                          // LIGHT MODE
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                // Oppdater siden bak modalvinduet.
+                                setState(() {
+                                  _isDarkMode = false;
+                                });
+
+                                // Oppdater selve modalvinduet.
+                                setModalState(() {});
+                              },
+
+                              icon: const Icon(
+                                Icons.light_mode_outlined,
+                              ),
+
+                              label: const Text('Light'),
+
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor:
+                                !_isDarkMode
+                                    ? kDarkGreen
+                                    : secondaryTextColor,
+
+                                backgroundColor:
+                                !_isDarkMode
+                                    ? kGold.withOpacity(0.15)
+                                    : Colors.transparent,
+
+                                side: BorderSide(
+                                  color:
+                                  !_isDarkMode
+                                      ? kGold
+                                      : Colors.white24,
+                                ),
+
+                                padding:
+                                const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+
+                          // DARK MODE
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  _isDarkMode = true;
+                                });
+
+                                setModalState(() {});
+                              },
+
+                              icon: const Icon(
+                                Icons.dark_mode_outlined,
+                              ),
+
+                              label: const Text('Dark'),
+
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor:
+                                _isDarkMode
+                                    ? kGold
+                                    : secondaryTextColor,
+
+                                backgroundColor:
+                                _isDarkMode
+                                    ? kGold.withOpacity(0.12)
+                                    : Colors.transparent,
+
+                                side: BorderSide(
+                                  color:
+                                  _isDarkMode
+                                      ? kGold
+                                      : Colors.black12,
+                                ),
+
+                                padding:
+                                const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+
+
+                      // ─────────────────────────────
+                      // TEXT SIZE
+                      // ─────────────────────────────
+                      Text(
+                        'Text size',
+
+                        style: TextStyle(
+                          color: primaryTextColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Text(
+                        'Adjust the guide text for easier reading.',
+
+                        style: TextStyle(
+                          color: secondaryTextColor,
+                          fontSize: 13,
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+
+                        decoration: BoxDecoration(
+                          color:
+                          _isDarkMode
+                              ? Colors.white.withOpacity(0.06)
+                              : const Color(0xFFF5F0EB),
+
+                          borderRadius:
+                          BorderRadius.circular(16),
+                        ),
+
+                        child: Row(
+                          children: [
+
+                            // REDUSER TEKST
+                            IconButton(
+                              onPressed:
+                              _textScale > 0.8
+                                  ? () {
+                                setState(() {
+                                  _textScale =
+                                      (_textScale - 0.1)
+                                          .clamp(
+                                        0.8,
+                                        1.4,
+                                      )
+                                          .toDouble();
+                                });
+
+                                setModalState(() {});
+                              }
+                                  : null,
+
+                              icon: const Icon(
+                                Icons.remove,
+                              ),
+
+                              color: primaryTextColor,
+                            ),
+
+
+                            // GJELDENDE STØRRELSE
+                            Expanded(
+                              child: Center(
+                                child: Text(
+                                  '${(_textScale * 100).round()}%',
+
+                                  style: TextStyle(
+                                    color: primaryTextColor,
+                                    fontSize: 18,
+                                    fontWeight:
+                                    FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+
+                            // ØK TEKST
+                            IconButton(
+                              onPressed:
+                              _textScale < 1.4
+                                  ? () {
+                                setState(() {
+                                  _textScale =
+                                      (_textScale + 0.1)
+                                          .clamp(
+                                        0.8,
+                                        1.4,
+                                      )
+                                          .toDouble();
+                                });
+
+                                setModalState(() {});
+                              }
+                                  : null,
+
+                              icon: const Icon(
+                                Icons.add,
+                              ),
+
+                              color: primaryTextColor,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Center(
+                        child: Text(
+                          'Minimum 80% · Maximum 140%',
+
+                          style: TextStyle(
+                            color: secondaryTextColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════
+  // BUILD
+  // ═══════════════════════════════════════════════
+
   @override
   Widget build(BuildContext context) {
 
-    // LinearProgressIndicator forventer verdi mellom 0.0 og 1.0.
+    // LinearProgressIndicator forventer en verdi
+    // mellom 0.0 og 1.0.
     final double progress = _completedSteps / 4;
 
+    final Color pageBackground =
+    _isDarkMode
+        ? kDarkBackground
+        : kBackground;
+
     return Scaffold(
-      backgroundColor: kBackground,
+      backgroundColor: pageBackground,
 
       body: Column(
         children: [
@@ -53,6 +428,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
           // ─────────────────────────────────────
           // HEADER
           // ─────────────────────────────────────
+
           Container(
             width: double.infinity,
             color: kDarkGreen,
@@ -69,17 +445,20 @@ class _UmrahScreenState extends State<UmrahScreen> {
                 ),
 
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                  CrossAxisAlignment.start,
 
                   children: [
 
-                    // Tittel og tilbakeknapp
+                    // Tilbakeknapp + tittel + settings.
                     Row(
                       children: [
+
                         IconButton(
                           onPressed: () {
                             Navigator.pop(context);
                           },
+
                           icon: const Icon(
                             Icons.arrow_back,
                             color: Colors.white,
@@ -90,18 +469,26 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                         const Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+
                             children: [
                               Text(
                                 'Umrah Guide',
+
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                  FontWeight.bold,
                                 ),
                               ),
+
+                              SizedBox(height: 2),
+
                               Text(
                                 'Step-by-step pilgrimage ritual',
+
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 14,
@@ -111,10 +498,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
                           ),
                         ),
 
+                        // Åpner innstillingene.
                         IconButton(
-                          onPressed: () {
-                            // Settings kommer her senere
-                          },
+                          onPressed: _openSettings,
+
+                          tooltip: 'Guide settings',
+
                           icon: const Icon(
                             Icons.settings_outlined,
                             color: Colors.white,
@@ -125,11 +514,17 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Tekstlig progresjon
+
+                    // ─────────────────────────────
+                    // PROGRESS
+                    // ─────────────────────────────
+
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
 
                       children: [
+
                         Text(
                           '$_completedSteps of 4 steps complete',
 
@@ -145,7 +540,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
                           style: const TextStyle(
                             color: kGold,
                             fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                            FontWeight.bold,
                           ),
                         ),
                       ],
@@ -153,14 +549,16 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                     const SizedBox(height: 10),
 
-                    // Visuell progressbar
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius:
+                      BorderRadius.circular(20),
 
                       child: LinearProgressIndicator(
                         value: progress,
                         minHeight: 10,
-                        backgroundColor: Colors.white24,
+
+                        backgroundColor:
+                        Colors.white24,
 
                         valueColor:
                         const AlwaysStoppedAnimation<Color>(
@@ -178,6 +576,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
           // ─────────────────────────────────────
           // RITUALKORT
           // ─────────────────────────────────────
+
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(20),
@@ -189,19 +588,24 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   number: 1,
                   title: 'Ihram',
                   arabicTitle: 'الإحرام',
-                  subtitle: 'Enter the sacred state for Umrah',
+                  subtitle:
+                  'Enter the sacred state for Umrah',
 
-                  // Kortet er åpent hvis _expandedStep == 0
-                  isExpanded: _expandedStep == 0,
+                  isExpanded:
+                  _expandedStep == 0,
 
-                  // Når brukeren trykker på kortet
+                  isDarkMode:
+                  _isDarkMode,
+
+                  textScale:
+                  _textScale,
+
                   onTap: () {
                     setState(() {
-
-                      // Hvis samme kort allerede er åpent,
-                      // lukk det. Ellers åpne det.
                       _expandedStep =
-                      _expandedStep == 0 ? null : 0;
+                      _expandedStep == 0
+                          ? null
+                          : 0;
                     });
                   },
                 ),
@@ -214,13 +618,24 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   number: 2,
                   title: 'Tawaf',
                   arabicTitle: 'الطواف',
-                  subtitle: 'Circumambulate the Kaaba seven times',
-                  isExpanded: _expandedStep == 1,
+                  subtitle:
+                  'Circumambulate the Kaaba seven times',
+
+                  isExpanded:
+                  _expandedStep == 1,
+
+                  isDarkMode:
+                  _isDarkMode,
+
+                  textScale:
+                  _textScale,
 
                   onTap: () {
                     setState(() {
                       _expandedStep =
-                      _expandedStep == 1 ? null : 1;
+                      _expandedStep == 1
+                          ? null
+                          : 1;
                     });
                   },
                 ),
@@ -233,13 +648,24 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   number: 3,
                   title: "Sa'i",
                   arabicTitle: 'السعي',
-                  subtitle: 'Walk between Safa and Marwa',
-                  isExpanded: _expandedStep == 2,
+                  subtitle:
+                  'Walk between Safa and Marwa',
+
+                  isExpanded:
+                  _expandedStep == 2,
+
+                  isDarkMode:
+                  _isDarkMode,
+
+                  textScale:
+                  _textScale,
 
                   onTap: () {
                     setState(() {
                       _expandedStep =
-                      _expandedStep == 2 ? null : 2;
+                      _expandedStep == 2
+                          ? null
+                          : 2;
                     });
                   },
                 ),
@@ -251,17 +677,31 @@ class _UmrahScreenState extends State<UmrahScreen> {
                 _UmrahStepCard(
                   number: 4,
                   title: 'Hair Cutting',
-                  arabicTitle: 'الحلق أو التقصير',
-                  subtitle: 'Trim or shave the hair to complete Umrah',
-                  isExpanded: _expandedStep == 3,
+                  arabicTitle:
+                  'الحلق أو التقصير',
+                  subtitle:
+                  'Trim or shave the hair to complete Umrah',
+
+                  isExpanded:
+                  _expandedStep == 3,
+
+                  isDarkMode:
+                  _isDarkMode,
+
+                  textScale:
+                  _textScale,
 
                   onTap: () {
                     setState(() {
                       _expandedStep =
-                      _expandedStep == 3 ? null : 3;
+                      _expandedStep == 3
+                          ? null
+                          : 3;
                     });
                   },
                 ),
+
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -275,14 +715,10 @@ class _UmrahScreenState extends State<UmrahScreen> {
 // ═════════════════════════════════════════════════
 // UMRAH STEP CARD
 //
-// Dette er fortsatt en StatelessWidget.
-// State ligger i forelderen UmrahScreen.
-//
-// Kortet mottar:
-// - informasjon om ritualet
-// - om det er åpnet eller lukket
-// - en funksjon som kjøres når brukeren trykker
+// StatelessWidget fordi state fortsatt ligger
+// i forelderen UmrahScreen.
 // ═════════════════════════════════════════════════
+
 class _UmrahStepCard extends StatelessWidget {
 
   final int number;
@@ -290,12 +726,13 @@ class _UmrahStepCard extends StatelessWidget {
   final String arabicTitle;
   final String subtitle;
 
-  // true = detaljene vises
-  // false = bare sammendrag vises
   final bool isExpanded;
+  final bool isDarkMode;
 
-  // Funksjonen som kjøres når kortet trykkes.
+  final double textScale;
+
   final VoidCallback onTap;
+
 
   const _UmrahStepCard({
     required this.number,
@@ -303,11 +740,35 @@ class _UmrahStepCard extends StatelessWidget {
     required this.arabicTitle,
     required this.subtitle,
     required this.isExpanded,
+    required this.isDarkMode,
+    required this.textScale,
     required this.onTap,
   });
 
+
   @override
   Widget build(BuildContext context) {
+
+    final Color cardColor =
+    isDarkMode
+        ? kDarkCard
+        : Colors.white;
+
+    final Color titleColor =
+    isDarkMode
+        ? Colors.white
+        : Colors.black87;
+
+    final Color secondaryColor =
+    isDarkMode
+        ? Colors.white70
+        : Colors.black54;
+
+    final Color borderColor =
+    isDarkMode
+        ? Colors.white12
+        : const Color(0xFFE5E0D8);
+
 
     return Material(
       color: Colors.transparent,
@@ -315,30 +776,37 @@ class _UmrahStepCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
 
-        borderRadius: BorderRadius.circular(18),
+        borderRadius:
+        BorderRadius.circular(18),
 
         child: Container(
-          padding: const EdgeInsets.all(18),
+          padding:
+          const EdgeInsets.all(18),
 
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            color: cardColor,
+
+            borderRadius:
+            BorderRadius.circular(18),
 
             border: Border.all(
-              color: const Color(0xFFE5E0D8),
+              color: borderColor,
             ),
           ),
 
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
 
             children: [
 
-              // ─────────────────────────────────
-              // ØVERSTE DEL AV KORTET
-              // ─────────────────────────────────
+              // ───────────────────────────────
+              // TOPPEN AV KORTET
+              // ───────────────────────────────
+
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                CrossAxisAlignment.start,
 
                 children: [
 
@@ -347,39 +815,47 @@ class _UmrahStepCard extends StatelessWidget {
                     width: 42,
                     height: 42,
 
-                    decoration: const BoxDecoration(
+                    decoration:
+                    const BoxDecoration(
                       color: kDarkGreen,
                       shape: BoxShape.circle,
                     ),
 
-                    alignment: Alignment.center,
+                    alignment:
+                    Alignment.center,
 
                     child: Text(
                       '$number',
 
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize:
+                        16 * textScale,
+                        fontWeight:
+                        FontWeight.bold,
                       ),
                     ),
                   ),
 
                   const SizedBox(width: 16),
 
-                  // Tittel, arabisk navn og kort forklaring
+                  // Tekstinnhold
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                      CrossAxisAlignment.start,
 
                       children: [
+
                         Text(
                           title,
 
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                          style: TextStyle(
+                            color: titleColor,
+                            fontSize:
+                            20 * textScale,
+                            fontWeight:
+                            FontWeight.bold,
                           ),
                         ),
 
@@ -388,9 +864,10 @@ class _UmrahStepCard extends StatelessWidget {
                         Text(
                           arabicTitle,
 
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: kGold,
-                            fontSize: 16,
+                            fontSize:
+                            16 * textScale,
                           ),
                         ),
 
@@ -399,9 +876,11 @@ class _UmrahStepCard extends StatelessWidget {
                         Text(
                           subtitle,
 
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 14,
+                          style: TextStyle(
+                            color:
+                            secondaryColor,
+                            fontSize:
+                            14 * textScale,
                             height: 1.4,
                           ),
                         ),
@@ -411,53 +890,56 @@ class _UmrahStepCard extends StatelessWidget {
 
                   const SizedBox(width: 8),
 
-                  // Pilen endrer retning basert på om
-                  // kortet er åpnet eller lukket.
+                  // Endrer retning når kortet åpnes.
                   Icon(
                     isExpanded
                         ? Icons.keyboard_arrow_up
                         : Icons.keyboard_arrow_down,
 
-                    color: Colors.black45,
+                    color: isDarkMode
+                        ? Colors.white54
+                        : Colors.black45,
                   ),
                 ],
               ),
 
 
-              // ─────────────────────────────────
-              // UTVIDET INNHOLD
-              // ─────────────────────────────────
-              //
-              // Denne delen legges kun inn i widget-treet
-              // når isExpanded == true.
+              // ───────────────────────────────
+              // EXPANDED CONTENT
+              // ───────────────────────────────
+
               if (isExpanded) ...[
                 const SizedBox(height: 18),
 
-                const Divider(),
+                Divider(
+                  color: isDarkMode
+                      ? Colors.white12
+                      : Colors.black12,
+                ),
 
                 const SizedBox(height: 12),
 
-                const Text(
+                Text(
                   'Instructions',
 
                   style: TextStyle(
-                    color: Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    color: titleColor,
+                    fontSize:
+                    16 * textScale,
+                    fontWeight:
+                    FontWeight.bold,
                   ),
                 ),
 
                 const SizedBox(height: 8),
 
-                // Foreløpig placeholder.
-                // I neste commit erstatter vi denne med
-                // ekte instruksjoner for hvert ritual.
                 Text(
                   'More information about $title will be shown here.',
 
-                  style: const TextStyle(
-                    color: Colors.black54,
-                    fontSize: 14,
+                  style: TextStyle(
+                    color: secondaryColor,
+                    fontSize:
+                    14 * textScale,
                     height: 1.5,
                   ),
                 ),
