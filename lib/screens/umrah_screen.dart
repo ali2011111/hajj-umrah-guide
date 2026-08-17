@@ -7,8 +7,12 @@ const Color kGold = Color(0xFFE9C46A);
 const Color kBackground = Color(0xFFF8F6F1);
 
 
+// ═════════════════════════════════════════════════
+// UMRAH SCREEN
+//
 // StatefulWidget brukes fordi progresjonen i guiden
 // skal kunne endres når brukeren fullfører ritualene.
+// ═════════════════════════════════════════════════
 class UmrahScreen extends StatefulWidget {
   const UmrahScreen({super.key});
 
@@ -157,23 +161,215 @@ class _UmrahScreenState extends State<UmrahScreen> {
             ),
           ),
 
+
           // ─────────────────────────────────────
           // GUIDE CONTENT
           // ─────────────────────────────────────
           //
-          // Midlertidig placeholder.
-          // I neste steg erstatter vi denne med
-          // de fire ritualkortene.
-          const Expanded(
-            child: Center(
-              child: Text(
-                'Umrah steps coming next...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
+          // Expanded bruker resten av høyden på skjermen.
+          // ListView gjør at brukeren kan scrolle dersom
+          // innholdet blir høyere enn skjermen.
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: const [
+
+                // ─────────────────────────────
+                // STEG 1 – IHRAM
+                // ─────────────────────────────
+                _UmrahStepCard(
+                  number: 1,
+                  title: 'Ihram',
+                  arabicTitle: 'الإحرام',
+                  subtitle: 'Enter the sacred state for Umrah',
                 ),
+
+                SizedBox(height: 14),
+
+
+                // ─────────────────────────────
+                // STEG 2 – TAWAF
+                // ─────────────────────────────
+                _UmrahStepCard(
+                  number: 2,
+                  title: 'Tawaf',
+                  arabicTitle: 'الطواف',
+                  subtitle: 'Circumambulate the Kaaba seven times',
+                ),
+
+                SizedBox(height: 14),
+
+
+                // ─────────────────────────────
+                // STEG 3 – SA'I
+                // ─────────────────────────────
+                _UmrahStepCard(
+                  number: 3,
+                  title: "Sa'i",
+                  arabicTitle: 'السعي',
+                  subtitle: 'Walk between Safa and Marwa',
+                ),
+
+                SizedBox(height: 14),
+
+
+                // ─────────────────────────────
+                // STEG 4 – HAIR CUTTING
+                // ─────────────────────────────
+                _UmrahStepCard(
+                  number: 4,
+                  title: 'Hair Cutting',
+                  arabicTitle: 'الحلق أو التقصير',
+                  subtitle: 'Trim or shave the hair to complete Umrah',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+// ═════════════════════════════════════════════════
+// UMRAH STEP CARD
+//
+// Gjenbrukbar widget for ett hovedsteg i Umrah.
+//
+// I stedet for å skrive samme UI fire ganger,
+// sender vi inn:
+// - stegnummer
+// - engelsk tittel
+// - arabisk tittel
+// - kort beskrivelse
+//
+// Senere gjør vi kortet expandable og legger til
+// status som "Current" og "Completed".
+// ═════════════════════════════════════════════════
+class _UmrahStepCard extends StatelessWidget {
+
+  final int number;
+  final String title;
+  final String arabicTitle;
+  final String subtitle;
+
+  const _UmrahStepCard({
+    required this.number,
+    required this.title,
+    required this.arabicTitle,
+    required this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+
+        // Lett kant rundt kortet for å skille
+        // det fra bakgrunnen.
+        border: Border.all(
+          color: const Color(0xFFE5E0D8),
+        ),
+      ),
+
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // ─────────────────────────────────────
+          // STEGNUMMER
+          // ─────────────────────────────────────
+          //
+          // Sirkel som viser nummeret på steget.
+          Container(
+            width: 42,
+            height: 42,
+
+            decoration: const BoxDecoration(
+              color: kDarkGreen,
+              shape: BoxShape.circle,
+            ),
+
+            alignment: Alignment.center,
+
+            child: Text(
+              '$number',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
+
+          const SizedBox(width: 16),
+
+
+          // ─────────────────────────────────────
+          // TEKST
+          // ─────────────────────────────────────
+          //
+          // Expanded gjør at teksten bruker resten
+          // av tilgjengelig bredde i kortet.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // Engelsk navn på ritualet.
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.black87,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+
+                // Arabisk navn på ritualet.
+                Text(
+                  arabicTitle,
+                  style: const TextStyle(
+                    color: kGold,
+                    fontSize: 16,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Kort forklaring på hva steget innebærer.
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontSize: 14,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+
+          // ─────────────────────────────────────
+          // EXPAND-IKON
+          // ─────────────────────────────────────
+          //
+          // Foreløpig er dette bare et visuelt hint.
+          // I neste commit gjør vi kortet klikkbart,
+          // slik at det kan åpnes og lukkes.
+          const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.black45,
           ),
         ],
       ),
