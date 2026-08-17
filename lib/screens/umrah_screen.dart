@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 // ─────────────────────────────────────────────────
 // FARGER
 // ─────────────────────────────────────────────────
+//
+// Foreløpig ligger fargene her i filen.
+// Senere kan vi flytte dem til et eget theme for hele appen.
 
 const Color kDarkGreen = Color(0xFF062E22);
 const Color kGold = Color(0xFFE9C46A);
@@ -26,7 +29,8 @@ class UmrahScreen extends StatefulWidget {
 
 class _UmrahScreenState extends State<UmrahScreen> {
 
-  // Holder styr på hvilke hovedsteg som er fullført.
+  // Set brukes fordi vi vil vite nøyaktig hvilke steg
+  // som er fullført, ikke bare hvor mange.
   //
   // 0 = Ihram
   // 1 = Tawaf
@@ -34,16 +38,20 @@ class _UmrahScreenState extends State<UmrahScreen> {
   // 3 = Hair Cutting
   final Set<int> _completedSteps = {};
 
-  // Første steg er åpent når guiden åpnes.
+  // Første kort er åpent når siden åpnes.
   int? _expandedStep = 0;
 
-  // Innstillinger.
+  // Innstillinger for denne guiden.
   bool _isDarkMode = false;
+
+  // 1.0 = 100 %
   double _textScale = 1.0;
 
-  // Tawaf-teller.
-  // Verdien skal alltid være mellom 0 og 7.
+  // Tawaf har 7 runder.
   int _tawafRounds = 0;
+
+  // Sa'i har også 7 strekninger.
+  int _saiLaps = 0;
 
 
   // ═══════════════════════════════════════════════
@@ -99,7 +107,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                     children: [
 
-                      // Håndtak
+                      // Lite håndtak på toppen.
                       Center(
                         child: Container(
                           width: 42,
@@ -147,7 +155,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                       Row(
                         children: [
 
-                          // LIGHT
+                          // LIGHT MODE
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
@@ -155,6 +163,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                   _isDarkMode = false;
                                 });
 
+                                // Bottom sheet må også bygges på nytt.
                                 setModalState(() {});
                               },
 
@@ -188,7 +197,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                           const SizedBox(width: 12),
 
-                          // DARK
+                          // DARK MODE
                           Expanded(
                             child: OutlinedButton.icon(
                               onPressed: () {
@@ -274,7 +283,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                         child: Row(
                           children: [
 
-                            // Mindre tekst
+                            // Mindre tekst.
                             IconButton(
                               onPressed: _textScale > 0.8
                                   ? () {
@@ -289,7 +298,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               }
                                   : null,
 
-                              icon: const Icon(Icons.remove),
+                              icon: const Icon(
+                                Icons.remove,
+                              ),
                             ),
 
                             Expanded(
@@ -305,7 +316,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               ),
                             ),
 
-                            // Større tekst
+                            // Større tekst.
                             IconButton(
                               onPressed: _textScale < 1.4
                                   ? () {
@@ -320,7 +331,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               }
                                   : null,
 
-                              icon: const Icon(Icons.add),
+                              icon: const Icon(
+                                Icons.add,
+                              ),
                             ),
                           ],
                         ),
@@ -355,13 +368,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
   bool _canCompleteStep(int stepIndex) {
 
-    // Ihram kan fullføres først.
+    // Ihram er det første steget.
     if (stepIndex == 0) {
       return true;
     }
 
-    // Alle andre steg krever at steget før
-    // allerede er fullført.
+    // Et steg kan bare fullføres hvis forrige steg er ferdig.
     return _completedSteps.contains(stepIndex - 1);
   }
 
@@ -372,15 +384,20 @@ class _UmrahScreenState extends State<UmrahScreen> {
       return;
     }
 
-    // Tawaf kan ikke fullføres før telleren er 7/7.
+    // Tawaf krever 7 / 7 før vi lar brukeren fullføre.
     if (stepIndex == 1 && _tawafRounds < 7) {
+      return;
+    }
+
+    // Sa'i krever også 7 / 7.
+    if (stepIndex == 2 && _saiLaps < 7) {
       return;
     }
 
     setState(() {
       _completedSteps.add(stepIndex);
 
-      // Åpne neste steg automatisk.
+      // Åpne neste kort automatisk.
       if (stepIndex < 3) {
         _expandedStep = stepIndex + 1;
       } else {
@@ -418,8 +435,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
   Future<void> _resetTawafCounter() async {
 
-    // Ingen grunn til å spørre om reset hvis telleren
-    // allerede står på null.
     if (_tawafRounds == 0) {
       return;
     }
@@ -438,6 +453,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
           ),
 
           actions: [
+
             TextButton(
               onPressed: () {
                 Navigator.pop(context, false);
@@ -461,6 +477,100 @@ class _UmrahScreenState extends State<UmrahScreen> {
         _tawafRounds = 0;
       });
     }
+  }
+
+
+  // ═══════════════════════════════════════════════
+  // SA'I COUNTER
+  // ═══════════════════════════════════════════════
+
+  void _increaseSaiLap() {
+    if (_saiLaps >= 7) {
+      return;
+    }
+
+    setState(() {
+      _saiLaps++;
+    });
+  }
+
+
+  void _decreaseSaiLap() {
+    if (_saiLaps <= 0) {
+      return;
+    }
+
+    setState(() {
+      _saiLaps--;
+    });
+  }
+
+
+  Future<void> _resetSaiCounter() async {
+
+    if (_saiLaps == 0) {
+      return;
+    }
+
+    final bool? shouldReset = await showDialog<bool>(
+      context: context,
+
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Reset Sa'i counter?",
+          ),
+
+          content: Text(
+            'Your current progress is $_saiLaps of 7 laps.',
+          ),
+
+          actions: [
+
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
+              child: const Text('Cancel'),
+            ),
+
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldReset == true) {
+      setState(() {
+        _saiLaps = 0;
+      });
+    }
+  }
+
+
+  // Beregner hvilken retning brukeren skal gå i Sa'i.
+  //
+  // 0 → Safa til Marwah
+  // 1 → Marwah til Safa
+  // 2 → Safa til Marwah
+  //
+  // Ved 7 / 7 er brukeren ferdig ved Marwah.
+  String get _saiDirection {
+
+    if (_saiLaps == 7) {
+      return 'Completed at Marwah';
+    }
+
+    if (_saiLaps.isEven) {
+      return 'Safa → Marwah';
+    }
+
+    return 'Marwah → Safa';
   }
 
 
@@ -532,6 +642,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                             CrossAxisAlignment.start,
 
                             children: [
+
                               Text(
                                 'Umrah Guide',
                                 style: TextStyle(
@@ -570,7 +681,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Progress
+                    // Progresjonstekst.
                     Row(
                       mainAxisAlignment:
                       MainAxisAlignment.spaceBetween,
@@ -626,7 +737,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
           // ─────────────────────────────────────
-          // GUIDE
+          // GUIDE CONTENT
           // ─────────────────────────────────────
 
           Expanded(
@@ -722,7 +833,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   title: "Sa'i",
                   arabicTitle: 'السعي',
                   subtitle:
-                  'Walk between Safa and Marwa',
+                  'Walk between Safa and Marwah',
 
                   isExpanded:
                   _expandedStep == 2,
@@ -763,7 +874,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                   'الحلق أو التقصير',
 
                   subtitle:
-                  'Shave or trim the hair to complete Umrah',
+                  'Trim or shave the hair to complete Umrah',
 
                   isExpanded:
                   _expandedStep == 3,
@@ -792,7 +903,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                 const SizedBox(height: 24),
 
-                // Vises når hele Umrah er fullført.
                 if (_completedSteps.length == 4)
                   _buildCompletionCard(),
 
@@ -807,72 +917,113 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
   // ═══════════════════════════════════════════════
-  // IHRAM
+  // 1. IHRAM CONTENT
   // ═══════════════════════════════════════════════
 
   Widget _buildIhramContent() {
+
     return Column(
       crossAxisAlignment:
       CrossAxisAlignment.start,
 
       children: [
 
+        // Hva Ihram er.
         _sectionTitle(
-          'Before entering Ihram',
+          'What is Ihram?',
+        ),
+
+        const SizedBox(height: 10),
+
+        _bodyText(
+          'Ihram is the sacred state entered in order to perform Umrah.',
+        ),
+
+        const SizedBox(height: 22),
+
+
+        // ───────────────────────────────────────
+        // PREPARATION
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '1. Prepare before Ihram',
         ),
 
         const SizedBox(height: 12),
 
         _InstructionItem(
           number: 1,
-
-          text:
-          'Prepare yourself before reaching the Miqat.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          text: 'Clip the nails.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 2,
-
-          text:
-          'Put on the Ihram garments before entering the state of Ihram.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          text: 'Trim the moustache.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 3,
-
-          text:
-          'Make a sincere intention to perform Umrah.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          text: 'Shave the pubic hair.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
-        const SizedBox(height: 16),
+        _InstructionItem(
+          number: 4,
+          text: 'Perform ghusl.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
 
-        // NIYYAH
+        _InstructionItem(
+          number: 5,
+          text: 'Perform wudu.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 6,
+          text:
+          'Apply perfume to the body before putting on Ihram.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        const SizedBox(height: 10),
+
         _InfoBox(
-          title: 'Niyyah · Intention',
+          title: 'Note',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
-          isDarkMode:
-          _isDarkMode,
+          child: _bodyText(
+            'The guide says to pray two rak‘ahs after putting on Ihram and before making the Niyyah.',
+          ),
+        ),
 
-          textScale:
-          _textScale,
+        const SizedBox(height: 24),
+
+
+        // ───────────────────────────────────────
+        // CLOTHING
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '2. Ihram clothing',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Men',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: Column(
             crossAxisAlignment:
@@ -881,55 +1032,191 @@ class _UmrahScreenState extends State<UmrahScreen> {
             children: [
 
               _bodyText(
-                'Make the sincere intention to perform Umrah.',
+                '• Ridaa’: upper towel',
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '• Izaar: lower towel',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '• Ni’aal: slippers',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '• No hat or underwear',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Women',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '• Khimar and jilbab in any colour',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '• No niqab or gloves',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '• Shoes and socks may be worn',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+
+        // ───────────────────────────────────────
+        // MIQAT
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '3. Miqat',
+        ),
+
+        const SizedBox(height: 12),
+
+        _bodyText(
+          'Miqat is the boundary from which Ihram must be entered for Umrah or Hajj.',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Five Mawaqeet listed in the guide',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '1. Al-Juhfah – Syria / Jeddah',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '2. Dhul Hulayfah – Madinah',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '3. Dhatu Irq – Iraq',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '4. Qarn-al-Manazil – Najd',
+              ),
+
+              const SizedBox(height: 6),
+
+              _bodyText(
+                '5. Yalamlam – Yemen',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+
+        // ───────────────────────────────────────
+        // NIYYAH
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '4. Make the Niyyah',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Niyyah · Intention',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
 
               _arabicText(
-                'لَبَّيْكَ اللَّهُمَّ عُمْرَةً',
+                'لَبَّيْكَ اللَّهُمَّ بِعُمْرَةٍ',
               ),
 
               const SizedBox(height: 10),
 
               _centerText(
-                "Labbayka Allahumma 'Umrah",
+                'Labbayk Allahumma bi Umrah',
                 bold: true,
               ),
 
               const SizedBox(height: 6),
 
               _centerText(
-                'Here I am, O Allah, for Umrah.',
+                'Here I am, O Allah, making Umrah.',
                 italic: true,
               ),
             ],
           ),
         ),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
 
+
+        // ───────────────────────────────────────
         // TALBIYAH
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '5. Begin the Talbiyah',
+        ),
+
+        const SizedBox(height: 12),
+
         _InfoBox(
           title: 'Talbiyah',
-
-          isDarkMode:
-          _isDarkMode,
-
-          textScale:
-          _textScale,
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: Column(
             crossAxisAlignment:
             CrossAxisAlignment.start,
 
             children: [
-
-              _bodyText(
-                'After entering Ihram, begin reciting the Talbiyah.',
-              ),
-
-              const SizedBox(height: 14),
 
               _arabicText(
                 'لَبَّيْكَ اللَّهُمَّ لَبَّيْكَ، '
@@ -941,10 +1228,150 @@ class _UmrahScreenState extends State<UmrahScreen> {
               const SizedBox(height: 12),
 
               _bodyText(
-                'Labbayka Allahumma labbayk, '
-                    'labbayka la sharika laka labbayk. '
-                    'Innal-hamda wan-ni‘mata laka wal-mulk, '
-                    'la sharika lak.',
+                'Labbayk Allahumma labbayk, '
+                    'labbayka laa shareeka laka labbayk, '
+                    'innal hamda wanne’ matah laka wal mulk, '
+                    'laa shareeka lak.',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+
+        // ───────────────────────────────────────
+        // PERMITTED
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '6. Permitted while in Ihram',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Permitted',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '• Scent-free cleaning products',
+              ),
+
+              _bodyText(
+                '• Bathing and changing Ihram',
+              ),
+
+              _bodyText(
+                '• Women wearing shoes',
+              ),
+
+              _bodyText(
+                '• Cupping, opening an abscess or pulling a tooth',
+              ),
+
+              _bodyText(
+                '• Wearing a belt or ring',
+              ),
+
+              _bodyText(
+                '• Wearing a watch',
+              ),
+
+              _bodyText(
+                '• Non-perfumed kohl',
+              ),
+
+              _bodyText(
+                '• Killing flies or harmful animals',
+              ),
+
+              _bodyText(
+                '• Sitting under shade such as an umbrella, tree or tent',
+              ),
+
+              _bodyText(
+                '• Using a blanket, while men do not cover the head',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+
+        // ───────────────────────────────────────
+        // PROHIBITED
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          '7. Prohibited while in Ihram',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: 'Prohibited',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '• Sexual intercourse',
+              ),
+
+              _bodyText(
+                '• Fighting or arguing',
+              ),
+
+              _bodyText(
+                '• Wearing sewn clothes',
+              ),
+
+              _bodyText(
+                '• Cutting the hair',
+              ),
+
+              _bodyText(
+                '• Trimming the nails',
+              ),
+
+              _bodyText(
+                '• Using perfumed soap',
+              ),
+
+              _bodyText(
+                '• Wearing perfume',
+              ),
+
+              _bodyText(
+                '• Men wearing hats',
+              ),
+
+              _bodyText(
+                '• Getting engaged or married',
+              ),
+
+              _bodyText(
+                '• Hunting',
+              ),
+
+              const SizedBox(height: 8),
+
+              _bodyText(
+                'The guide notes that some actions may require a penalty.',
               ),
             ],
           ),
@@ -954,8 +1381,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
         _buildCompleteButton(
           stepIndex: 0,
-          label:
-          'Mark Ihram as complete',
+          label: 'Mark Ihram as complete',
         ),
       ],
     );
@@ -963,7 +1389,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
   // ═══════════════════════════════════════════════
-  // TAWAF
+  // 2. TAWAF CONTENT
   // ═══════════════════════════════════════════════
 
   Widget _buildTawafContent() {
@@ -977,6 +1403,47 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
       children: [
 
+        // ───────────────────────────────────────
+        // BEFORE TAWAF
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          'Before Tawaf',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InstructionItem(
+          number: 1,
+          text:
+          'Enter Masjid al-Haram and prepare for Tawaf.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 2,
+          text:
+          'Stop reciting the Talbiyah when beginning Tawaf.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 3,
+          text:
+          'For men, perform Idtibaa’ as described in the guide.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        const SizedBox(height: 22),
+
+
+        // ───────────────────────────────────────
+        // PERFORM TAWAF
+        // ───────────────────────────────────────
+
         _sectionTitle(
           'Perform Tawaf',
         ),
@@ -985,71 +1452,101 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
         _InstructionItem(
           number: 1,
-
           text:
-          'Begin at the Black Stone (Hajar al-Aswad) and keep the Kaaba on your left.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'Begin at the Black Stone (Al-Hajr Al-Aswad).',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 2,
-
           text:
-          'Walk around the Kaaba in a counter-clockwise direction.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'Raise the hand and say “Allahu Akbar”.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 3,
-
           text:
-          'Complete seven full circuits. Each circuit counts as one round.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'Move around the Kaaba in an anti-clockwise direction.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 4,
-
           text:
-          'Make dua and dhikr while performing Tawaf.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'The guide says to hurry during the first three rounds (Raml).',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
-        const SizedBox(height: 18),
+        _InstructionItem(
+          number: 5,
+          text:
+          'Walk normally during the final four rounds.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 6,
+          text:
+          'Make dua during Tawaf.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 7,
+          text:
+          'Break Tawaf for obligatory Salah if needed.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        const SizedBox(height: 16),
 
 
-        // ═══════════════════════════════════════
+        // Dua mellom Yemeni corner og Black Stone.
+        _InfoBox(
+          title: 'Between the Yemeni Corner and Black Stone',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _centerText(
+                'Rabbana aatina fidduniya hasanah wa fil aakhirati hasanah wa qina azaban nar',
+                bold: true,
+              ),
+
+              const SizedBox(height: 8),
+
+              _centerText(
+                'O Allah, our Lord, give us good in this world, and good in the Hereafter, and save us from the punishment of fire.',
+                italic: true,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+
+        // ───────────────────────────────────────
         // TAWAF COUNTER
-        // ═══════════════════════════════════════
+        // ───────────────────────────────────────
 
         _InfoBox(
           title: 'Tawaf counter',
-
-          isDarkMode:
-          _isDarkMode,
-
-          textScale:
-          _textScale,
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: Column(
             children: [
@@ -1076,7 +1573,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
               Text(
                 tawafReady
-                    ? 'All rounds completed'
+                    ? 'All seven rounds completed'
                     : 'rounds completed',
 
                 style: TextStyle(
@@ -1090,59 +1587,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
               const SizedBox(height: 18),
 
-              // Sirkler som viser 7 runder.
-              Row(
-                mainAxisAlignment:
-                MainAxisAlignment.center,
-
-                children:
-                List.generate(
-                  7,
-                      (index) {
-
-                    final bool completed =
-                        index < _tawafRounds;
-
-                    return Container(
-                      width: 22,
-                      height: 22,
-
-                      margin:
-                      const EdgeInsets.symmetric(
-                        horizontal: 3,
-                      ),
-
-                      decoration:
-                      BoxDecoration(
-                        color: completed
-                            ? kGold
-                            : Colors.transparent,
-
-                        shape:
-                        BoxShape.circle,
-
-                        border:
-                        Border.all(
-                          color: completed
-                              ? kGold
-                              : _isDarkMode
-                              ? Colors.white30
-                              : Colors.black26,
-
-                          width: 1.5,
-                        ),
-                      ),
-
-                      child: completed
-                          ? const Icon(
-                        Icons.check,
-                        size: 14,
-                        color: kDarkGreen,
-                      )
-                          : null,
-                    );
-                  },
-                ),
+              _buildSevenDots(
+                completed:
+                _tawafRounds,
               ),
 
               const SizedBox(height: 22),
@@ -1150,7 +1597,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
               Row(
                 children: [
 
-                  // Minus
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed:
@@ -1171,7 +1617,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                   const SizedBox(width: 12),
 
-                  // Plus
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed:
@@ -1183,8 +1628,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                         Icons.add,
                       ),
 
-                      label:
-                      Text(
+                      label: Text(
                         _tawafRounds == 6
                             ? 'Final round'
                             : 'Next round',
@@ -1197,19 +1641,13 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
                         foregroundColor:
                         Colors.white,
-
-                        disabledBackgroundColor:
-                        kGold.withOpacity(0.35),
-
-                        disabledForegroundColor:
-                        kDarkGreen,
                       ),
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
               TextButton.icon(
                 onPressed:
@@ -1229,26 +1667,108 @@ class _UmrahScreenState extends State<UmrahScreen> {
           ),
         ),
 
+        const SizedBox(height: 26),
+
+
+        // ───────────────────────────────────────
+        // MAQAM IBRAHIM
+        // ───────────────────────────────────────
+
+        _sectionTitle(
+          'After Tawaf',
+        ),
+
+        const SizedBox(height: 12),
+
+        _InfoBox(
+          title: '1. Pray behind Maqam Ibrahim',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '• Cover the shoulders.',
+              ),
+
+              _bodyText(
+                '• Pray two rak‘ahs of nafl Salah.',
+              ),
+
+              _bodyText(
+                '• The guide says the Prophet ﷺ prayed Surah Al-Kafirun in the first rak‘ah.',
+              ),
+
+              _bodyText(
+                '• Surah Al-Ikhlas in the second rak‘ah.',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+
+        // ───────────────────────────────────────
+        // ZAMZAM
+        // ───────────────────────────────────────
+
+        _InfoBox(
+          title: '2. Drink Zamzam water',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                '• Face the Qibla.',
+              ),
+
+              _bodyText(
+                '• The guide says it may be drunk standing or sitting.',
+              ),
+
+              const SizedBox(height: 14),
+
+              _centerText(
+                "Allah humma Innee as alooka 'ilman naafia wa rizqan waa se'a wa Shifa'a min kulli daa",
+                bold: true,
+              ),
+
+              const SizedBox(height: 8),
+
+              _centerText(
+                'O Allah, I seek beneficial knowledge, wide sustenance and cure from all ailments from You.',
+                italic: true,
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: 16),
 
         _InfoBox(
-          title: 'After Tawaf',
-
-          isDarkMode:
-          _isDarkMode,
-
-          textScale:
-          _textScale,
+          title: "3. Continue to Sa'i",
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: _bodyText(
-            'After completing the seven rounds, continue with the remaining acts after Tawaf before moving on to Sa\'i.',
+            "After the acts following Tawaf, continue to Safa to begin Sa'i.",
           ),
         ),
 
         const SizedBox(height: 22),
 
-        // Tawaf-knappen får spesiallogikk:
-        // den er deaktivert frem til 7/7.
+
+        // Tawaf kan bare fullføres når 7 runder er ferdige.
         if (!_completedSteps.contains(1))
           SizedBox(
             width:
@@ -1273,8 +1793,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
                 !_canCompleteStep(1)
                     ? 'Complete Ihram first'
                     : _tawafRounds < 7
-                    ? 'Complete all 7 rounds'
-                    : 'Mark Tawaf as complete',
+                    ? 'Complete all 7 Tawaf rounds'
+                    : "Complete Tawaf & continue to Sa'i",
               ),
 
               style:
@@ -1295,12 +1815,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
                 const EdgeInsets.symmetric(
                   vertical: 16,
                 ),
-
-                shape:
-                RoundedRectangleBorder(
-                  borderRadius:
-                  BorderRadius.circular(14),
-                ),
               ),
             ),
           )
@@ -1315,10 +1829,14 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
   // ═══════════════════════════════════════════════
-  // SA'I
+  // 3. SA'I CONTENT
   // ═══════════════════════════════════════════════
 
   Widget _buildSaiContent() {
+
+    final bool saiReady =
+        _saiLaps == 7;
+
     return Column(
       crossAxisAlignment:
       CrossAxisAlignment.start,
@@ -1326,98 +1844,328 @@ class _UmrahScreenState extends State<UmrahScreen> {
       children: [
 
         _sectionTitle(
-          "Perform Sa'i",
+          "Begin Sa'i at Safa",
         ),
 
         const SizedBox(height: 12),
 
         _InstructionItem(
           number: 1,
-
           text:
-          'Begin at Safa and proceed towards Marwa.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'Begin at Safa and face the Qibla.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 2,
-
           text:
-          'Safa to Marwa counts as one lap.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'From Safa, walk towards Marwah.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 3,
-
           text:
-          'Marwa back to Safa counts as the second lap.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'The guide says to hurry in the green zone.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 4,
-
           text:
-          'Complete seven laps. The seventh lap finishes at Marwa.',
+          'Make dua during Sa’i.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
 
-          textScale:
-          _textScale,
+        _InstructionItem(
+          number: 5,
+          text:
+          'Break for obligatory Salah if needed.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
 
-          isDarkMode:
-          _isDarkMode,
+        _InstructionItem(
+          number: 6,
+          text:
+          'If wudu breaks, the guide says to continue.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
+        ),
+
+        _InstructionItem(
+          number: 7,
+          text:
+          'Make dua at Marwah as at Safa.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         const SizedBox(height: 16),
 
         _InfoBox(
-          title: "Sa'i",
+          title: 'At Safa',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
-          isDarkMode:
-          _isDarkMode,
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
 
-          textScale:
-          _textScale,
+            children: [
+
+              _bodyText(
+                'The guide says to face the Qibla and say:',
+              ),
+
+              const SizedBox(height: 10),
+
+              _centerText(
+                'Verily! Safaa & Al Marwah are of the Symbols of Allah.',
+                italic: true,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
+
+        // ───────────────────────────────────────
+        // SA'I COUNTER
+        // ───────────────────────────────────────
+
+        _InfoBox(
+          title: "Sa'i counter",
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            children: [
+
+              Text(
+                '$_saiLaps / 7',
+
+                style: TextStyle(
+                  color: saiReady
+                      ? kGold
+                      : _primaryTextColor,
+
+                  fontSize:
+                  38 * _textScale,
+
+                  fontWeight:
+                  FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                _saiDirection,
+
+                style: TextStyle(
+                  color:
+                  saiReady
+                      ? kGold
+                      : _primaryTextColor,
+
+                  fontSize:
+                  17 * _textScale,
+
+                  fontWeight:
+                  FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              Text(
+                saiReady
+                    ? 'The seventh lap ends at Marwah.'
+                    : 'Follow this direction for the next lap.',
+
+                textAlign:
+                TextAlign.center,
+
+                style: TextStyle(
+                  color:
+                  _secondaryTextColor,
+
+                  fontSize:
+                  13 * _textScale,
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              _buildSevenDots(
+                completed:
+                _saiLaps,
+              ),
+
+              const SizedBox(height: 22),
+
+              Row(
+                children: [
+
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed:
+                      _saiLaps > 0
+                          ? _decreaseSaiLap
+                          : null,
+
+                      icon: const Icon(
+                        Icons.remove,
+                      ),
+
+                      label:
+                      const Text(
+                        'Previous',
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed:
+                      _saiLaps < 7
+                          ? _increaseSaiLap
+                          : null,
+
+                      icon: const Icon(
+                        Icons.directions_walk,
+                      ),
+
+                      label: Text(
+                        _saiLaps == 6
+                            ? 'Final lap'
+                            : 'Complete lap',
+                      ),
+
+                      style:
+                      ElevatedButton.styleFrom(
+                        backgroundColor:
+                        kDarkGreen,
+
+                        foregroundColor:
+                        Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              TextButton.icon(
+                onPressed:
+                _saiLaps > 0
+                    ? _resetSaiCounter
+                    : null,
+
+                icon: const Icon(
+                  Icons.restart_alt,
+                ),
+
+                label: const Text(
+                  'Reset counter',
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        _InfoBox(
+          title: 'How the laps work',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: _bodyText(
-            'Safa → Marwa = 1\n'
-                'Marwa → Safa = 2\n'
-                'Continue until the seventh lap, ending at Marwa.',
+            'Safa → Marwah = 1\n'
+                'Marwah → Safa = 2\n'
+                'Continue until the seventh lap, which ends at Marwah.',
           ),
         ),
 
         const SizedBox(height: 22),
 
-        _buildCompleteButton(
-          stepIndex: 2,
-          label:
-          "Mark Sa'i as complete",
-        ),
+
+        // Sa'i må være 7 / 7 før knappen aktiveres.
+        if (!_completedSteps.contains(2))
+          SizedBox(
+            width:
+            double.infinity,
+
+            child:
+            ElevatedButton.icon(
+              onPressed:
+              _canCompleteStep(2) &&
+                  _saiLaps == 7
+                  ? () {
+                _completeStep(2);
+              }
+                  : null,
+
+              icon:
+              const Icon(
+                Icons.check_circle_outline,
+              ),
+
+              label: Text(
+                !_canCompleteStep(2)
+                    ? 'Complete Tawaf first'
+                    : _saiLaps < 7
+                    ? "Complete all 7 Sa'i laps"
+                    : "Mark Sa'i as complete",
+              ),
+
+              style:
+              ElevatedButton.styleFrom(
+                backgroundColor:
+                kDarkGreen,
+
+                foregroundColor:
+                Colors.white,
+
+                disabledBackgroundColor:
+                Colors.grey.shade300,
+
+                disabledForegroundColor:
+                Colors.grey.shade600,
+
+                padding:
+                const EdgeInsets.symmetric(
+                  vertical: 16,
+                ),
+              ),
+            ),
+          )
+
+        else
+          _completedLabel(
+            "Sa'i completed",
+          ),
       ],
     );
   }
 
 
   // ═══════════════════════════════════════════════
-  // HAIR CUTTING
+  // 4. HAIR CUTTING
   // ═══════════════════════════════════════════════
 
   Widget _buildHairCuttingContent() {
+
     return Column(
       crossAxisAlignment:
       CrossAxisAlignment.start,
@@ -1425,63 +2173,78 @@ class _UmrahScreenState extends State<UmrahScreen> {
       children: [
 
         _sectionTitle(
-          'Complete your Umrah',
+          'Taqsir / Halaq',
         ),
 
         const SizedBox(height: 12),
 
         _InstructionItem(
           number: 1,
-
           text:
-          'After completing Sa\'i, complete the required hair cutting.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          "After completing Sa'i, go to get the hair cut.",
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 2,
-
           text:
-          'Men may shave the head or shorten the hair.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'Taqsir or Halaq means trimming or shaving the hair.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         _InstructionItem(
           number: 3,
-
           text:
-          'Women shorten a small amount from the ends of their hair.',
-
-          textScale:
-          _textScale,
-
-          isDarkMode:
-          _isDarkMode,
+          'The guide says women cut a small lock of hair.',
+          textScale: _textScale,
+          isDarkMode: _isDarkMode,
         ),
 
         const SizedBox(height: 16),
 
         _InfoBox(
           title: 'Leaving Ihram',
-
-          isDarkMode:
-          _isDarkMode,
-
-          textScale:
-          _textScale,
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
 
           child: _bodyText(
-            'After the hair cutting is completed, the Umrah is complete and the state of Ihram ends.',
+            'After completing the hair cutting, the guide states that Umrah is complete and the restrictions of Ihram end.',
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        _InfoBox(
+          title: 'Leaving the mosque',
+          isDarkMode: _isDarkMode,
+          textScale: _textScale,
+
+          child: Column(
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
+
+            children: [
+
+              _bodyText(
+                'The guide says to exit with the left foot and say:',
+              ),
+
+              const SizedBox(height: 10),
+
+              _centerText(
+                'Allahummu inni asaluka min fadlik',
+                bold: true,
+              ),
+
+              const SizedBox(height: 6),
+
+              _centerText(
+                'O Allah, I ask You from Your favour.',
+                italic: true,
+              ),
+            ],
           ),
         ),
 
@@ -1497,27 +2260,23 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
   // ═══════════════════════════════════════════════
-  // COMPLETION
+  // COMPLETION CARD
   // ═══════════════════════════════════════════════
 
   Widget _buildCompletionCard() {
     return Container(
       width: double.infinity,
-
-      padding:
-      const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
 
       decoration: BoxDecoration(
         color: _isDarkMode
             ? kGold.withOpacity(0.10)
             : const Color(0xFFFFF6DC),
 
-        borderRadius:
-        BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20),
 
         border: Border.all(
-          color:
-          kGold.withOpacity(0.5),
+          color: kGold.withOpacity(0.5),
         ),
       ),
 
@@ -1532,48 +2291,53 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
           const SizedBox(height: 14),
 
+          // Hovedmelding når hele Umrah er fullført.
           Text(
-            'Umrah Complete',
+            'Umrah Mubarak',
+
+            textAlign: TextAlign.center,
 
             style: TextStyle(
               color: _primaryTextColor,
-              fontSize:
-              22 * _textScale,
-
-              fontWeight:
-              FontWeight.bold,
+              fontSize: 24 * _textScale,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
 
           Text(
-            'May Allah accept your Umrah',
-
-            textAlign:
-            TextAlign.center,
+            'Alhamdulillah',
 
             style: TextStyle(
               color: kGold,
-              fontSize:
-              17 * _textScale,
-
-              fontWeight:
-              FontWeight.w600,
+              fontSize: 18 * _textScale,
+              fontWeight: FontWeight.w600,
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+
+          Text(
+            'May Allah accept your Umrah and your worship.',
+
+            textAlign: TextAlign.center,
+
+            style: TextStyle(
+              color: _secondaryTextColor,
+              fontSize: 14 * _textScale,
+              height: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 14),
 
           Text(
             '4 of 4 steps completed',
 
             style: TextStyle(
-              color:
-              _secondaryTextColor,
-
-              fontSize:
-              13 * _textScale,
+              color: _secondaryTextColor,
+              fontSize: 13 * _textScale,
             ),
           ),
         ],
@@ -1583,13 +2347,14 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
 
   // ═══════════════════════════════════════════════
-  // HELPERS
+  // REUSABLE HELPERS
   // ═══════════════════════════════════════════════
 
   Color get _primaryTextColor =>
       _isDarkMode
           ? Colors.white
           : Colors.black87;
+
 
   Color get _secondaryTextColor =>
       _isDarkMode
@@ -1600,6 +2365,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget _sectionTitle(
       String text,
       ) {
+
     return Text(
       text,
 
@@ -1620,6 +2386,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget _bodyText(
       String text,
       ) {
+
     return Text(
       text,
 
@@ -1639,6 +2406,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget _arabicText(
       String text,
       ) {
+
     return Center(
       child: Text(
         text,
@@ -1667,6 +2435,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
         bool bold = false,
         bool italic = false,
       }) {
+
     return Center(
       child: Text(
         text,
@@ -1690,7 +2459,75 @@ class _UmrahScreenState extends State<UmrahScreen> {
           italic
               ? FontStyle.italic
               : FontStyle.normal,
+
+          height: 1.5,
         ),
+      ),
+    );
+  }
+
+
+  // Gjenbrukes både av Tawaf og Sa'i.
+  Widget _buildSevenDots({
+    required int completed,
+  }) {
+
+    return Row(
+      mainAxisAlignment:
+      MainAxisAlignment.center,
+
+      children:
+      List.generate(
+        7,
+            (index) {
+
+          final bool isCompleted =
+              index < completed;
+
+          return Container(
+            width: 22,
+            height: 22,
+
+            margin:
+            const EdgeInsets.symmetric(
+              horizontal: 3,
+            ),
+
+            decoration:
+            BoxDecoration(
+              color:
+              isCompleted
+                  ? kGold
+                  : Colors.transparent,
+
+              shape:
+              BoxShape.circle,
+
+              border:
+              Border.all(
+                color:
+                isCompleted
+                    ? kGold
+                    : _isDarkMode
+                    ? Colors.white30
+                    : Colors.black26,
+
+                width:
+                1.5,
+              ),
+            ),
+
+            child:
+            isCompleted
+                ? const Icon(
+              Icons.check,
+              size: 14,
+              color:
+              kDarkGreen,
+            )
+                : null,
+          );
+        },
       ),
     );
   }
@@ -1699,6 +2536,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
   Widget _completedLabel(
       String text,
       ) {
+
     return Row(
       children: [
 
@@ -1713,7 +2551,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
           text,
 
           style: TextStyle(
-            color: _isDarkMode
+            color:
+            _isDarkMode
                 ? Colors.white
                 : kDarkGreen,
 
@@ -1754,7 +2593,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
       width: double.infinity,
 
       child: ElevatedButton.icon(
-        onPressed: canComplete
+        onPressed:
+        canComplete
             ? () {
           _completeStep(
             stepIndex,
@@ -1762,7 +2602,8 @@ class _UmrahScreenState extends State<UmrahScreen> {
         }
             : null,
 
-        icon: const Icon(
+        icon:
+        const Icon(
           Icons.check_circle_outline,
         ),
 
@@ -1809,8 +2650,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
 // UMRAH STEP CARD
 // ═════════════════════════════════════════════════
 
-class _UmrahStepCard
-    extends StatelessWidget {
+class _UmrahStepCard extends StatelessWidget {
 
   final int number;
 
@@ -1924,7 +2764,7 @@ class _UmrahStepCard
 
                 children: [
 
-                  // Nummer/checkmark
+                  // Nummer eller checkmark.
                   Container(
                     width: 42,
                     height: 42,
@@ -2080,8 +2920,7 @@ class _UmrahStepCard
 // INSTRUCTION ITEM
 // ═════════════════════════════════════════════════
 
-class _InstructionItem
-    extends StatelessWidget {
+class _InstructionItem extends StatelessWidget {
 
   final int number;
   final String text;
@@ -2184,8 +3023,7 @@ class _InstructionItem
 // INFO BOX
 // ═════════════════════════════════════════════════
 
-class _InfoBox
-    extends StatelessWidget {
+class _InfoBox extends StatelessWidget {
 
   final String title;
   final Widget child;
