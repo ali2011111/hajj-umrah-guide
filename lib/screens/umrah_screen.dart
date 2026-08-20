@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ─────────────────────────────────────────────────
 // FARGER
@@ -52,6 +53,72 @@ class _UmrahScreenState extends State<UmrahScreen> {
 
   // Sa'i har også 7 strekninger.
   int _saiLaps = 0;
+
+
+  // ═══════════════════════════════════════════════
+  // LOCAL STORAGE
+  // ═══════════════════════════════════════════════
+  //
+  // Her håndterer vi lokal lagring og lasting
+  // av innstillingene med SharedPreferences.
+  //
+  // Tanken er:
+  // - når skjermen åpnes → last lagrede verdier
+  // - når brukeren endrer noe → lagre ny verdi
+
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Kjøres én gang når UmrahScreen opprettes.
+    _loadSettings();
+  }
+
+
+  // Laster tidligere lagret dark/light mode
+  // og tekststørrelse fra mobilen.
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Etter await sjekker vi at skjermen fortsatt er aktiv
+    // før vi oppdaterer UI med setState().
+    if (!mounted) return;
+
+    setState(() {
+      // Hvis ingen verdi finnes fra før,
+      // bruker vi false = light mode.
+      _isDarkMode =
+          prefs.getBool('umrah_dark_mode') ?? false;
+
+      // Hvis ingen tekststørrelse finnes fra før,
+      // bruker vi 1.0 = 100 %.
+      _textScale =
+          prefs.getDouble('umrah_text_scale') ?? 1.0;
+    });
+  }
+
+
+  // Lagrer valgt light/dark mode lokalt.
+  Future<void> _saveDarkMode() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool(
+      'umrah_dark_mode',
+      _isDarkMode,
+    );
+  }
+
+
+  // Lagrer valgt tekststørrelse lokalt.
+  Future<void> _saveTextScale() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    await prefs.setDouble(
+      'umrah_text_scale',
+      _textScale,
+    );
+  }
 
 
   // ═══════════════════════════════════════════════
@@ -163,7 +230,12 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                   _isDarkMode = false;
                                 });
 
-                                // Bottom sheet må også bygges på nytt.
+                                // Lagre valget slik at appen husker det
+                                // neste gang Umrah-guiden åpnes.
+                                _saveDarkMode();
+
+                                // Bottom sheet bruker egen state,
+                                // derfor må den også oppdateres.
                                 setModalState(() {});
                               },
 
@@ -204,6 +276,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                 setState(() {
                                   _isDarkMode = true;
                                 });
+
+                                // Lagre valget lokalt.
+                                _saveDarkMode();
 
                                 setModalState(() {});
                               },
@@ -283,7 +358,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                         child: Row(
                           children: [
 
-                            // Mindre tekst.
+                            // MINDRE TEKST
                             IconButton(
                               onPressed: _textScale > 0.8
                                   ? () {
@@ -294,6 +369,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                           .toDouble();
                                 });
 
+                                // Lagre ny tekststørrelse.
+                                _saveTextScale();
+
                                 setModalState(() {});
                               }
                                   : null,
@@ -303,6 +381,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               ),
                             ),
 
+                            // VIS GJELDENDE STØRRELSE
                             Expanded(
                               child: Center(
                                 child: Text(
@@ -316,7 +395,7 @@ class _UmrahScreenState extends State<UmrahScreen> {
                               ),
                             ),
 
-                            // Større tekst.
+                            // STØRRE TEKST
                             IconButton(
                               onPressed: _textScale < 1.4
                                   ? () {
@@ -326,6 +405,9 @@ class _UmrahScreenState extends State<UmrahScreen> {
                                           .clamp(0.8, 1.4)
                                           .toDouble();
                                 });
+
+                                // Lagre ny tekststørrelse.
+                                _saveTextScale();
 
                                 setModalState(() {});
                               }
@@ -360,7 +442,6 @@ class _UmrahScreenState extends State<UmrahScreen> {
       },
     );
   }
-
 
   // ═══════════════════════════════════════════════
   // STEP LOGIC
