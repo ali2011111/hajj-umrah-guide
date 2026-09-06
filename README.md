@@ -4,9 +4,9 @@
 
 ## 💡 Background
 
-During my own Umrah journey, I noticed that most available apps were either outdated, overly complex, or lacked a clean and intuitive experience. As a newly graduated software engineer and a Muslim, I saw an opportunity to combine my technical skills with something meaningful — and build the app I wished I had.
+During my own Umrah journey, I noticed that most available apps were either outdated, overly complex, or lacked a clean and intuitive experience. As a newly graduated computer science, I saw an opportunity to combine my technical skills with something meaningful and build the app I wished I had.
 
-Daleel is built for the community, by the community. The goal is to make the spiritual journey of Hajj and Umrah more accessible, organized and peaceful for every pilgrim — regardless of experience.
+This is built for the community, by the community. The goal is to make the spiritual journey of Hajj and Umrah more accessible, organized and peaceful for every pilgrim, regardless of experience.
 
 ## ✨ Features
 - 📿 Step-by-step Umrah guide
@@ -60,8 +60,8 @@ flutter run
 
 ## 🤝 Contributing
 
-This is an open project built for the Muslim community. Contributions, feedback and suggestions are welcome — whether it's a bug fix, a translation, or a feature idea.
+Contributions, feedback and suggestions are welcome — whether it's a bug fix, a translation, or a feature idea.
 
 ## 👨‍💻 Developer
 
-Built by Mohammad Ali Shakil — software engineer and Muslim, trying to give back to the community one commit at a time.
+Built by Mohammad Ali Shakil — software engineer, trying to give back to the community one commit at a time.
