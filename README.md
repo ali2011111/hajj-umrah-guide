@@ -1,4 +1,4 @@
-# 🕌 Daleel – Hajj & Umrah Guide
+# Daleel – Hajj & Umrah Guide
 
 > **دليل** (Daleel) means "guide" in Arabic.
 
