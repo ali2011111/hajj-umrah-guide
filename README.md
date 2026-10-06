@@ -42,9 +42,9 @@ flutter run
 - [x] Home screen with prayer times
 - [x] Hijri calendar date
 - [x] Bottom navigation
-- [ ] Umrah guide with full ritual steps
+- [x] Umrah guide with full ritual steps
 - [ ] Hajj guide
-- [ ] Holy sites map
+- [x] Holy sites map
 - [ ] Duas & Dhikr section
 - [ ] Checklist with local storage
 - [ ] Multilingual support (Arabic, Norwegian, English)
