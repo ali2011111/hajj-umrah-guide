@@ -919,6 +919,70 @@ class _HadithCard extends StatelessWidget {
     this.hadithNumber,
   });
 
+  void _showFullHadith(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'HADITH OF THE DAY',
+                    style: TextStyle(
+                      color: Color(0xFFC89B32),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  Text(
+                    '"$text"',
+                    style: const TextStyle(
+                      fontSize: 17,
+                      height: 1.6,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  if (collection.isNotEmpty)
+                    Text(
+                      hadithNumber != null
+                          ? '— $collection · Hadith $hadithNumber'
+                          : '— $collection',
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+
+                  if (grade.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Grade: $grade',
+                      style: const TextStyle(
+                        color: Colors.black45,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -973,10 +1037,35 @@ class _HadithCard extends StatelessWidget {
 
           Text(
             '"$text"',
+            maxLines: 6,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: Color(0xFF1C1C2B),
               fontSize: 17,
               height: 1.5,
+            ),
+          ),
+
+          const SizedBox(height: 6),
+
+          Align (
+            alignment: Alignment.centerRight,
+
+            child: TextButton(
+              onPressed: () => _showFullHadith(context),
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(50, 30),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: const Text(
+                'Read more',
+                style: TextStyle(
+                  color: Color(0xFFC89B32),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
 
