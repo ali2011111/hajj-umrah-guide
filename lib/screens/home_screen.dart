@@ -116,7 +116,7 @@ class _HomeTabState extends State<_HomeTab> {
   String _hijriDate = '';
 
   late Future<Map<String, dynamic>> _prayerTimesFuture;
-  late Future<Map<String, dynamic>> _hadithFuture;
+
 
   @override
   void initState() {
@@ -124,7 +124,7 @@ class _HomeTabState extends State<_HomeTab> {
 
     // API-kallene kjøres én gang når skjermen opprettes.
     _prayerTimesFuture = _fetchPrayerTimes();
-    _hadithFuture = _fetchHadith();
+
   }
 
 
@@ -170,27 +170,8 @@ class _HomeTabState extends State<_HomeTab> {
   }
 
 
-  // ───────────────────────────────────────────────
-  // HENT HADITH
-  // ───────────────────────────────────────────────
-
-  Future<Map<String, dynamic>> _fetchHadith() async {
-    final response = await http.get(
-      Uri.parse(
-        'https://ummahapi.com/api/hadith/random',
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-
-      return Map<String, dynamic>.from(
-        json['data'],
-      );
-    }
-
-    throw Exception('Klarte ikke hente hadith');
-  }
+  // TODO: Re-add Hadith API later.
+  // Make sure only suitable and verified hadiths are shown.
 
 
   // ───────────────────────────────────────────────
@@ -462,63 +443,10 @@ class _HomeTabState extends State<_HomeTab> {
 
         // ════════════════════════════════════════
         // HADITH OF THE DAY
+        // TODO: Re-add Hadith API later.
+        // Make sure only suitable and verified hadiths are shown.
         // ════════════════════════════════════════
 
-        SliverToBoxAdapter(
-          child: Container(
-            color: kBackground,
-            padding: const EdgeInsets.fromLTRB(
-              20,
-              24,
-              20,
-              24,
-            ),
-
-            child: FutureBuilder<Map<String, dynamic>>(
-              future: _hadithFuture,
-
-              builder: (context, snapshot) {
-                // Laster
-                if (snapshot.connectionState ==
-                    ConnectionState.waiting) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: CircularProgressIndicator(
-                        color: kGold,
-                      ),
-                    ),
-                  );
-                }
-
-                // Feil
-                if (snapshot.hasError) {
-                  return const _HadithErrorCard();
-                }
-
-                // Data tilgjengelig
-                final hadith = snapshot.data!;
-
-                return _HadithCard(
-                  text:
-                  hadith['english'] ??
-                      'Hadith unavailable',
-
-                  collection:
-                  hadith['collection_name'] ??
-                      hadith['collection'] ??
-                      '',
-
-                  grade:
-                  hadith['grade'] ?? '',
-
-                  hadithNumber:
-                  hadith['hadithnumber'],
-                );
-              },
-            ),
-          ),
-        ),
 
 
         // ════════════════════════════════════════
